@@ -1,0 +1,24 @@
+{
+  "name": "playwright-patterns",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Reference structure for a Playwright repo: POM + dependency injection + API-assisted setup, with the same suite mirrored in Cucumber for comparison.",
+  "scripts": {
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "test:headed": "playwright test --headed",
+    "test:cucumber": "NODE_OPTIONS='--import tsx' cucumber-js",
+    "typecheck": "tsc --noEmit",
+    "report": "playwright show-report",
+    "test:cucumber:dry": "NODE_OPTIONS='--import tsx' cucumber-js --dry-run"
+  },
+  "devDependencies": {
+    "@cucumber/cucumber": "^11.0.1",
+    "@playwright/test": "^1.49.1",
+    "@types/node": "^22.10.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  },
+  "license": "Apache-2.0"
+}

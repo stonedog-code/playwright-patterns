@@ -1,0 +1,12 @@
+node_modules/
+test-results/
+playwright-report/
+blob-report/
+cucumber-report.html
+playwright/.auth/
+.env
+
+# Agent instructions stay OUT of every repo under energy-solution: they are
+# workspace- and machine-specific context, not part of the product.
+CLAUDE.md
+.claude/
