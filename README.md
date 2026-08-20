@@ -71,11 +71,21 @@ playwright-patterns/
 ```bash
 npm install                  # no browsers needed for the checks below
 npm run typecheck            # tsc over 21 files
-npm run test:cucumber:dry    # every Gherkin sentence resolves to a step
+npm run check:steps          # every Gherkin sentence resolves to a step
 ```
 
-Both were run and confirmed non-vacuous: a planted type error is caught, and a
-planted unmatched Gherkin step is reported as undefined.
+Both were run and confirmed non-vacuous, and one of them had to be fixed to
+earn that claim. A planted type error is caught — `tsc` exits 2. But
+`cucumber-js --dry-run` **reports** an undefined step and then **exits 0
+anyway**, with or without `--strict` (which only covers *pending* steps), so
+as a merge gate it could never fail a build: it prints "1 undefined" in yellow
+and CI, which reads the exit code, calls it a pass. "Reported" is not "caught".
+
+`npm run check:steps` (`scripts/check-steps.sh`) reads the summary instead and
+fails on undefined steps, ambiguous steps, **and zero scenarios** — the last so
+a config or path change that stops matching any `.feature` file cannot report a
+clean run over nothing. All three were proven by planting each failure and
+watching the check go red, then confirming the healthy tree still passes.
 
 To actually run against a real app you would additionally need
 `npx playwright install`, a live `BASE_URL`, and a seeded QA account.

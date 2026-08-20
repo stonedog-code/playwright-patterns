@@ -1,0 +1,56 @@
+# The merge gate for playwright-patterns.
+#
+# This repo is a reference STRUCTURE, not a running suite: there is no
+# application at demo.example.com, so `playwright test` is deliberately not run
+# here and would fail if it were. What can be checked is exactly what the README
+# claims — that it compiles, and that every Gherkin sentence resolves to a step
+# definition. Both are the repo's documented gate.
+name: CI
+
+on:
+  # Unscoped on purpose. `branches: [main]` would silently exempt a PR stacked
+  # on another branch — the one most likely to need checking.
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  # Never cancel a run on `main`: its result is the record of what the trunk
+  # actually does.
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+permissions:
+  contents: read
+
+jobs:
+  # The job id is the status-check context that branch protection requires, so
+  # keep it stable: renaming this job silently un-gates the branch, because
+  # protection goes on requiring a context that no longer reports.
+  gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+
+      # `npm ci` rather than `npm install`: it installs exactly what
+      # package-lock.json pins and fails if the two disagree, so the gate
+      # cannot quietly test a different dependency tree than a person gets.
+      - name: Install
+        run: npm ci
+
+      - name: Gate — typecheck
+        run: npm run typecheck
+
+      # NOT the bare `test:cucumber:dry`. cucumber-js REPORTS undefined and
+      # ambiguous steps and then exits 0 anyway — with or without `--strict`,
+      # which only covers *pending* steps — so as a CI step it could never fail
+      # the build. check:steps reads the summary instead, and also fails on
+      # zero scenarios so a config change that stops matching .feature files
+      # cannot report a clean run over nothing.
+      - name: Gate — every Gherkin step resolves
+        run: npm run check:steps
